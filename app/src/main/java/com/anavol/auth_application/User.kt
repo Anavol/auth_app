@@ -1,12 +1,11 @@
 package com.anavol.auth_application
 
-import androidx.lifecycle.MutableLiveData
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-class User (
-    var login: MutableLiveData<String>,
-    var photo: MutableLiveData<String>,
-    var token: MutableLiveData<String>
-)
-{
-
-}
+@Parcelize
+data class User (
+    var login: String,
+    var photo: String,
+    var token: String
+): Parcelable

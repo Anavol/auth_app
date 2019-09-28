@@ -21,6 +21,7 @@ import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.util.Log
+import com.vk.sdk.VKAccessToken.ACCESS_TOKEN
 import com.vk.sdk.api.*
 import com.vk.sdk.api.model.*
 import com.vk.sdk.api.model.VKList
@@ -37,11 +38,15 @@ class MainActivity : AppCompatActivity() {
         // val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
         VKSdk.initialize(this.applicationContext)
         VKSdk.login(this, VKScope.STATS)
-        var request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,"photo_50"))
+        var request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,"photo_200"))
+        val mainIntent = Intent(this, Activity2::class.java)
         request.executeWithListener(object: VKRequest.VKRequestListener() {
-
+    //access_token -> 289bb688ac1177b6fb45ff5eba673757766f16c23d95ad43ddfc53b7ab5fe86c1f0d3d53a255684f10827
             override fun onComplete(response: VKResponse) {
-                val user = (response.parsedModel as VKList<VKApiUserFull>)[0]
+                val responseParsed = (response.parsedModel as VKList<VKApiUserFull>)[0]
+                val user = User(responseParsed.first_name + " " + responseParsed.last_name, responseParsed.photo_200, request.preparedParameters["access_token"].toString() )
+
+                startActivity(mainIntent.putExtra("user", user))
             }
            override fun onError(error: VKError) {
                 //Do error stuff
