@@ -15,18 +15,16 @@ import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import com.vk.sdk.VKAccessToken
 import com.vk.sdk.VKCallback
-import com.vk.sdk.api.VKApi
-import com.vk.sdk.api.VKError
-import com.vk.sdk.api.model.VKApiOwner
-import com.vk.sdk.api.model.VKApiPhoto
-import com.vk.sdk.api.model.VKApiUser
 import kotlinx.android.synthetic.main.activity_main.*
-import com.vk.sdk.api.VKRequest
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import com.vk.sdk.api.VKResponse
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.util.Log
+import com.vk.sdk.api.*
+import com.vk.sdk.api.model.*
+import com.vk.sdk.api.model.VKList
+import com.vk.sdk.api.model.VKApiUserFull
 
 
 
@@ -39,11 +37,11 @@ class MainActivity : AppCompatActivity() {
         // val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
         VKSdk.initialize(this.applicationContext)
         VKSdk.login(this, VKScope.STATS)
-        var request = VKApi.users().get()
+        var request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,"photo_50"))
         request.executeWithListener(object: VKRequest.VKRequestListener() {
 
             override fun onComplete(response: VKResponse) {
-                textView.text = response.responseString
+                val user = (response.parsedModel as VKList<VKApiUserFull>)[0]
             }
            override fun onError(error: VKError) {
                 //Do error stuff
@@ -51,14 +49,14 @@ class MainActivity : AppCompatActivity() {
             override fun attemptFailed(request: VKRequest,attemptNumber: Int, totalAttempts: Int) {
                 //I don't really believe in progress
             }
-        });
+        })
+
     }
         override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
             if (!VKSdk.onActivityResult(requestCode, resultCode, data, object : VKCallback<VKAccessToken> {
 
                     override fun onResult(res: VKAccessToken) {
-                        var id = res.userId
-                        textView2.text = res.userId
+
                     }
                     override
                     fun onError(error: VKError ) {
