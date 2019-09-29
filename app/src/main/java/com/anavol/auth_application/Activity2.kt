@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_2.*
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_login.*
 
 class Activity2 : AppCompatActivity() {
 
@@ -12,9 +12,9 @@ class Activity2 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_2)
         val user = intent.getParcelableExtra<User>("user")
-        textName.text = user.login + user.photo
-   //     Picasso.get()
-     //       .load(user.photo)
-       //     .into(imageAvatar)
+        textName.text = user.login
+       Picasso.get()
+            .load(user.photo)
+            .into(imageAvatar)
     }
 }
