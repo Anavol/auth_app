@@ -12,9 +12,9 @@ class Activity2 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_2)
         val user = intent.getParcelableExtra<User>("user")
-        textName.text = user.login
-        Picasso.get()
-            .load(user.photo)
-            .into(imageAvatar)
+        textName.text = user.login + user.photo
+   //     Picasso.get()
+     //       .load(user.photo)
+       //     .into(imageAvatar)
     }
 }
