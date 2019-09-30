@@ -5,16 +5,16 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = arrayOf(UserData::class), version = 1)
+@Database(entities = [UserData::class], version = 1)
 abstract class UserDataBase : RoomDatabase() {
-    abstract fun UserDataDao(): UserDataDao
+    abstract fun userDataDao(): UserDataDao
 
     companion object {
         private var INSTANCE: UserDataBase? = null
         fun getInstance(context: Context): UserDataBase? {
             if (INSTANCE == null) {
                 synchronized(UserDataBase::class) {
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
+                    INSTANCE = Room.databaseBuilder(context.applicationContext,
                         UserDataBase::class.java, "users.db")
                         .build()
                 }
