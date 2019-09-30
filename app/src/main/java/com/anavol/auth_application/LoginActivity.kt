@@ -8,9 +8,10 @@ import com.vk.sdk.VKSdk
 import com.vk.sdk.VKScope
 import com.vk.sdk.VKAccessToken
 import com.vk.sdk.VKCallback
-import android.os.Handler
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
+import com.anavol.auth_application.DbTools.Companion.fetchUserDataFromDb
+import com.anavol.auth_application.DbTools.Companion.insertUserDataInDb
 import com.anavol.auth_application.databinding.ActivityLoginBinding
 import com.squareup.picasso.Picasso
 import com.vk.sdk.api.*
@@ -39,20 +40,24 @@ class LoginActivity : AppCompatActivity() {
         binding.lifecycleOwner = this
         mDb = UserDataBase.getInstance(this)
         GlobalScope.launch(Dispatchers.Main) {
-            fetchUserDataFromDb()
+            fetchUserDataFromDb(mDb,userData)
             if (userData.id != null ) {
                 val user = User(userData.name, userData.photo)
                 viewModel.login.value = user.login
+                viewModel.isLoged.value = true
                 Picasso.get()
                     .load(user.photo)
                     .into(profilePic)
+            }
+            else {
+                viewModel.isLoged.value = false
+             //   VKSdk.logout()
             }
         }
         btnLogin.setOnClickListener {
             val user = User(userData.name, userData.photo)
             startActivity(mainIntent.putExtra("user", user))
         }
-
         btnVK.setOnClickListener {
             VKSdk.initialize(this.applicationContext)
             VKSdk.login(this, VKScope.STATS)
@@ -65,9 +70,9 @@ class LoginActivity : AppCompatActivity() {
                     userData.token = request.preparedParameters["access_token"].toString()
                     userData.socialNetwork = "VK"
                     GlobalScope.launch(Dispatchers.Main) {
-                        insertUserDataInDb(userData)
+                        insertUserDataInDb(mDb,userData)
                         userData = UserData()
-                        fetchUserDataFromDb()
+                        fetchUserDataFromDb(mDb,userData)
                         val user = User(userData.name, userData.photo)
                         startActivity(mainIntent.putExtra("user", user))
                     }
@@ -98,23 +103,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
     }
-    suspend fun fetchUserDataFromDb() {
-            val userDataList =
-                mDb?.userDataDao()?.getAll()
-            if (userDataList == null || userDataList?.size == 0) {
-            }
-            else {
-                userData.id = userDataList?.get(0).id
-                userData.name = userDataList?.get(0).name
-                userData.photo = userDataList?.get(0).photo
-                userData.token = userDataList?.get(0).token
-                userData.socialNetwork = userDataList?.get(0).socialNetwork
-            }
-    }
 
-    suspend fun insertUserDataInDb(UserData: UserData) {
-            mDb?.userDataDao()?.insert(UserData)
-    }
 }
 class MyApplication: Application() {
     override fun onCreate() {

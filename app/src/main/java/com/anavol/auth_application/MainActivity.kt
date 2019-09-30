@@ -1,5 +1,6 @@
 package com.anavol.auth_application
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -14,6 +15,12 @@ import android.view.Menu
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import com.anavol.auth_application.databinding.ActivityMainBinding
+import com.anavol.auth_application.databinding.NavHeaderMainBinding
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,27 +30,35 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
         val user = intent.getParcelableExtra<User>("user")
+        val mDb = UserDataBase.getInstance(this)
+        val loginIntent = Intent(this, LoginActivity::class.java)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         val binding: ActivityMainBinding = DataBindingUtil.setContentView(
             this, R.layout.activity_main)
-        val navBind: ActivityMainBinding = DataBindingUtil.inflate(layoutInflater,R.layout.nav_header_main,binding.navView,false)
+        val navBind: NavHeaderMainBinding = DataBindingUtil.inflate(layoutInflater,R.layout.nav_header_main,binding.navView,false)
         binding.navView.addHeaderView(navBind.root)
-        navBind.viewModel?.login?.value = user.login
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
+        navBind.viewModel = viewModel
+        Picasso.get()
+            .load(user.photo)
+            .into(navBind.imageView)
+        viewModel.login.value = user.login
 
+        navBind.button.setOnClickListener {
+            GlobalScope.launch(Dispatchers.Default) {
+                DbTools.clearDb(mDb)
+                startActivity(loginIntent)
+            }
+        }
 
-
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
 
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
             ), drawerLayout
