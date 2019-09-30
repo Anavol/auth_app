@@ -30,7 +30,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val mainIntent = Intent(this, Activity2::class.java)
+        val mainIntent = Intent(this, MainActivity::class.java)
       //  val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
         viewModel = ViewModelProviders.of(this).get(LoginViewModel::class.java)
         val binding: ActivityLoginBinding = DataBindingUtil.setContentView(
@@ -47,6 +47,10 @@ class LoginActivity : AppCompatActivity() {
                     .load(user.photo)
                     .into(profilePic)
             }
+        }
+        btnLogin.setOnClickListener {
+            val user = User(userData.name, userData.photo)
+            startActivity(mainIntent.putExtra("user", user))
         }
 
         btnVK.setOnClickListener {
