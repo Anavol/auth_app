@@ -13,6 +13,7 @@ import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import com.anavol.auth_application.databinding.ActivityMainBinding
@@ -29,13 +30,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
-    private lateinit var apiService: GithubApiService
+    private val gitApiServe by lazy {
+       GithubApiService.create()
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
      //   val user = intent.getParcelableExtra<User>("user")
-        apiService = GithubApiService.create()
         val mDb = UserDataBase.getInstance(this)
         val loginIntent = Intent(this, LoginActivity::class.java)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -46,18 +48,7 @@ class MainActivity : AppCompatActivity() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         navBind.viewModel = viewModel
-        val repository = SearchRepositoryProvider.provideSearchRepository()
 
-       repository.searchUsers("alex")
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(Schedulers.io())
-            .subscribe ({
-                    result ->
-                var res = result.items
-            },
-                { error ->
-                error.printStackTrace()
-            })
 
 
       //  Picasso.get()
@@ -79,12 +70,22 @@ class MainActivity : AppCompatActivity() {
             setOf(
             ), drawerLayout
         )
+        beginSearch("max")
     }
-    object SearchRepositoryProvider {
-        fun provideSearchRepository(): GitSearchRepository {
-            return GitSearchRepository(apiService = apiService)
-        }
+    private fun beginSearch(searchString: String) {
+        gitApiServe.search(searchString)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { result ->
+                    var res = result.items
+                },
+                { error ->
+                    val er = error.message
+                    Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show() }
+            )
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.

@@ -10,12 +10,13 @@ import retrofit2.http.Query
 interface GithubApiService {
 
     @GET("search/users")
-    fun search(@Query("q") query: String,
-               @Query("order") order: String,
-               @Query("page") page: Int,
-               @Query("per_page") perPage: Int): Observable<Result>
+    fun search(@Query("q") query: String
+             //  @Query("order") order: String,
+            //   @Query("page") page: Int,
+             //  @Query("per_page") perPage: Int
+        ): Observable<Result>
 
-    companion object Factory {
+    companion object{
         fun create(): GithubApiService {
             val retrofit = Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())

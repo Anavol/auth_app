@@ -10,7 +10,7 @@ data class GitUser(
     val starred_url: String,
     val gists_url: String,
     val type: String,
-    val score: Int
+    val score: Float
 )
 
 data class Result (val total_count: Int, val incomplete_results: Boolean, val items: List<GitUser>)
