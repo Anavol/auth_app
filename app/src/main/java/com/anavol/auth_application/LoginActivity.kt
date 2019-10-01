@@ -17,6 +17,7 @@ import com.squareup.picasso.Picasso
 import com.vk.sdk.api.*
 import com.vk.sdk.api.model.VKList
 import com.vk.sdk.api.model.VKApiUserFull
+import com.vk.sdk.util.VKUtil
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -32,7 +33,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val mainIntent = Intent(this, MainActivity::class.java)
-      //  val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
+            //val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
         viewModel = ViewModelProviders.of(this).get(LoginViewModel::class.java)
         val binding: ActivityLoginBinding = DataBindingUtil.setContentView(
             this, R.layout.activity_login)
