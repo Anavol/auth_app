@@ -2,6 +2,7 @@ package com.anavol.auth_application
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -12,11 +13,16 @@ import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.anavol.auth_application.databinding.ActivityMainBinding
+import com.anavol.auth_application.databinding.ContentMainBinding
 import com.anavol.auth_application.databinding.NavHeaderMainBinding
 import com.squareup.picasso.Picasso
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -26,11 +32,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
+    private lateinit var GitUserAdapter: GitUserRecyclerAdapter
+    private lateinit var contentBind: ContentMainBinding
+    private val gitApiServe by lazy {
+       GithubApiService.create()
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val user = intent.getParcelableExtra<User>("user")
+       val user = intent.getParcelableExtra<User>("user")
         val mDb = UserDataBase.getInstance(this)
         val loginIntent = Intent(this, LoginActivity::class.java)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -41,7 +52,10 @@ class MainActivity : AppCompatActivity() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         navBind.viewModel = viewModel
-        Picasso.get()
+
+        contentBind = DataBindingUtil.inflate(layoutInflater,R.layout.content_main,binding.drawerLayout,false)
+
+       Picasso.get()
             .load(user.photo)
             .into(navBind.imageView)
         viewModel.login.value = user.login
@@ -56,16 +70,40 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
-        val navView: NavigationView = findViewById(R.id.nav_view)
-        val navController = findNavController(R.id.nav_host_fragment)
-
         appBarConfiguration = AppBarConfiguration(
             setOf(
             ), drawerLayout
         )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        GitUserAdapter = GitUserRecyclerAdapter()
+        beginSearch("anavol")
+        //initRecyclerView()
+        contentBind.recyclerView
+            .apply {
+                layoutManager = LinearLayoutManager(this@MainActivity)
+                adapter = GitUserAdapter
+            }
+
     }
+
+    private fun initRecyclerView(){
+
+    }
+    private fun beginSearch(searchString: String) {
+
+        gitApiServe.search(searchString)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { result ->
+                        GitUserAdapter.submitList(result.items)
+                },
+                { error ->
+                    Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
+                }
+            )
+
+    }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -73,8 +111,4 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
 }
