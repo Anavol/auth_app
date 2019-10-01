@@ -7,6 +7,4 @@ import kotlinx.android.parcel.Parcelize
 data class User (
     var login: String,
     var photo: String
-  //  var token: String,
-  //  var socialNetwork: String
 ): Parcelable
