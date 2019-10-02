@@ -10,14 +10,15 @@ import com.vk.sdk.VKAccessToken
 import com.vk.sdk.VKCallback
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
-import com.anavol.auth_application.DbTools.Companion.fetchUserDataFromDb
-import com.anavol.auth_application.DbTools.Companion.insertUserDataInDb
+import com.anavol.auth_application.userDBTools.DbTools.Companion.fetchUserDataFromDb
+import com.anavol.auth_application.userDBTools.DbTools.Companion.insertUserDataInDb
+import com.anavol.auth_application.userDBTools.UserData
+import com.anavol.auth_application.userDBTools.UserDataBase
 import com.anavol.auth_application.databinding.ActivityLoginBinding
 import com.squareup.picasso.Picasso
 import com.vk.sdk.api.*
 import com.vk.sdk.api.model.VKList
 import com.vk.sdk.api.model.VKApiUserFull
-import com.vk.sdk.util.VKUtil
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -39,6 +40,7 @@ class LoginActivity : AppCompatActivity() {
             this, R.layout.activity_login)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
+
         mDb = UserDataBase.getInstance(this)
         GlobalScope.launch(Dispatchers.Main) {
             fetchUserDataFromDb(mDb,userData)
@@ -55,10 +57,12 @@ class LoginActivity : AppCompatActivity() {
                 VKSdk.logout()
             }
         }
+
         btnLogin.setOnClickListener {
             val user = User(userData.name, userData.photo)
             startActivity(mainIntent.putExtra("user", user))
         }
+
         btnVK.setOnClickListener {
             VKSdk.initialize(this.applicationContext)
             VKSdk.login(this, VKScope.STATS)

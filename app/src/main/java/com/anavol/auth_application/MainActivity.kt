@@ -2,14 +2,8 @@ package com.anavol.auth_application
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
@@ -17,13 +11,16 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.anavol.auth_application.gitSearchTools.GithubApiService
+import com.anavol.auth_application.searchRecycleView.GitUserRecyclerAdapter
+import com.anavol.auth_application.userDBTools.DbTools
+import com.anavol.auth_application.userDBTools.UserDataBase
 import com.anavol.auth_application.databinding.ActivityMainBinding
 import com.anavol.auth_application.databinding.ContentMainBinding
 import com.anavol.auth_application.databinding.NavHeaderMainBinding
 import com.squareup.picasso.Picasso
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -32,7 +29,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
-    private lateinit var GitUserAdapter: GitUserRecyclerAdapter
+    private lateinit var gitUserAdapter: GitUserRecyclerAdapter
     private lateinit var contentBind: ContentMainBinding
     private val gitApiServe by lazy {
        GithubApiService.create()
@@ -55,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         contentBind = DataBindingUtil.inflate(layoutInflater,R.layout.content_main,binding.drawerLayout,false)
 
-       Picasso.get()
+        Picasso.get()
             .load(user.photo)
             .into(navBind.imageView)
         viewModel.login.value = user.login
@@ -74,28 +71,25 @@ class MainActivity : AppCompatActivity() {
             setOf(
             ), drawerLayout
         )
-        GitUserAdapter = GitUserRecyclerAdapter()
-        beginSearch("anavol")
-        //initRecyclerView()
+        gitUserAdapter = GitUserRecyclerAdapter()
+
+        beginSearch("max")
         contentBind.recyclerView
             .apply {
                 layoutManager = LinearLayoutManager(this@MainActivity)
-                adapter = GitUserAdapter
+                adapter = gitUserAdapter
             }
-
     }
 
-    private fun initRecyclerView(){
 
-    }
     private fun beginSearch(searchString: String) {
-
-        gitApiServe.search(searchString)
+        gitApiServe.search(searchString, 100)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { result ->
-                        GitUserAdapter.submitList(result.items)
+                        gitUserAdapter.submitList(result.items)
+                        gitUserAdapter.notifyDataSetChanged()
                 },
                 { error ->
                     Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
@@ -103,8 +97,6 @@ class MainActivity : AppCompatActivity() {
             )
 
     }
-
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)

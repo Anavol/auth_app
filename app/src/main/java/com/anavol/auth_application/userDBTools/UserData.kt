@@ -1,4 +1,4 @@
-package com.anavol.auth_application
+package com.anavol.auth_application.userDBTools
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

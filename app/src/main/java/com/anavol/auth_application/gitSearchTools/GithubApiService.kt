@@ -1,4 +1,4 @@
-package com.anavol.auth_application
+package com.anavol.auth_application.gitSearchTools
 
 import io.reactivex.Observable
 import retrofit2.Retrofit
@@ -10,10 +10,10 @@ import retrofit2.http.Query
 interface GithubApiService {
 
     @GET("search/users")
-    fun search(@Query("q") query: String
+    fun search(@Query("q") query: String,
              //  @Query("order") order: String,
             //   @Query("page") page: Int,
-             //  @Query("per_page") perPage: Int
+               @Query("per_page") perPage: Int
         ): Observable<Result>
 
     companion object{

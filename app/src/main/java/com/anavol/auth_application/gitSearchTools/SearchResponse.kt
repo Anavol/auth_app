@@ -1,4 +1,4 @@
-package com.anavol.auth_application
+package com.anavol.auth_application.gitSearchTools
 
 data class GitUser(
     val login: String,
