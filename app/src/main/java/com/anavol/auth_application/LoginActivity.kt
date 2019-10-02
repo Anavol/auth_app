@@ -47,13 +47,13 @@ class LoginActivity : AppCompatActivity() {
             if (userData.id != null ) {
                 val user = User(userData.name, userData.photo)
                 viewModel.login.value = user.login
-                viewModel.isLoged.value = true
+                viewModel.isLogged.value = true
                 Picasso.get()
                     .load(user.photo)
                     .into(profilePic)
             }
             else {
-                viewModel.isLoged.value = false
+                viewModel.isLogged.value = false
                 VKSdk.logout()
             }
         }

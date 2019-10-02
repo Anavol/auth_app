@@ -21,6 +21,8 @@ import com.anavol.auth_application.databinding.NavHeaderMainBinding
 import com.squareup.picasso.Picasso
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -30,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
     private lateinit var gitUserAdapter: GitUserRecyclerAdapter
-    private lateinit var contentBind: ContentMainBinding
     private val gitApiServe by lazy {
        GithubApiService.create()
     }
@@ -38,26 +39,39 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-       val user = intent.getParcelableExtra<User>("user")
+        val user = intent.getParcelableExtra<User>("user")
         val mDb = UserDataBase.getInstance(this)
         val loginIntent = Intent(this, LoginActivity::class.java)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         val binding: ActivityMainBinding = DataBindingUtil.setContentView(
-            this, R.layout.activity_main)
-        val navBind: NavHeaderMainBinding = DataBindingUtil.inflate(layoutInflater,R.layout.nav_header_main,binding.navView,false)
+            this, R.layout.activity_main
+        )
+        val navBind: NavHeaderMainBinding = DataBindingUtil.inflate(
+            layoutInflater,
+            R.layout.nav_header_main,
+            binding.navView,
+            false
+        )
         binding.navView.addHeaderView(navBind.root)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         navBind.viewModel = viewModel
 
-        contentBind = DataBindingUtil.inflate(layoutInflater,R.layout.content_main,binding.drawerLayout,false)
+        val contentViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        val contentBind: ContentMainBinding = DataBindingUtil.inflate(
+            layoutInflater,
+            R.layout.content_main,
+            binding.drawerLayout,
+            false
+        )
+        contentBind.viewModel = contentViewModel
 
         Picasso.get()
             .load(user.photo)
-            .into(navBind.imageView)
+            .into(navBind.profilePic)
         viewModel.login.value = user.login
 
-        navBind.button.setOnClickListener {
+        navBind.logout.setOnClickListener {
             GlobalScope.launch(Dispatchers.Default) {
                 DbTools.clearDb(mDb)
                 startActivity(loginIntent)
@@ -73,12 +87,15 @@ class MainActivity : AppCompatActivity() {
         )
         gitUserAdapter = GitUserRecyclerAdapter()
 
-        beginSearch("max")
-        contentBind.recyclerView
-            .apply {
-                layoutManager = LinearLayoutManager(this@MainActivity)
-                adapter = gitUserAdapter
-            }
+        btnSearch.setOnClickListener {
+            var searchString = searchField.text.toString()
+            beginSearch(searchString = searchString)
+            contentBind.recyclerView
+                .apply {
+                    layoutManager = LinearLayoutManager(this@MainActivity)
+                    adapter = gitUserAdapter
+                }
+        }
     }
 
 

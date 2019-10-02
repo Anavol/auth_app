@@ -11,7 +11,7 @@ class MainViewModel: ViewModel() {
         .apply {
             value = ""
         }
-    var photoLocal = MutableLiveData<String>()
+    val searchString = MutableLiveData<String>()
         .apply {
             value = ""
         }

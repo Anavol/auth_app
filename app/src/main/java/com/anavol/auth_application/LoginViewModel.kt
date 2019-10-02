@@ -8,7 +8,7 @@ class LoginViewModel(): ViewModel() {
         .apply {
             value = ""
         }
-    var isLoged = MutableLiveData<Boolean>()
+    var isLogged = MutableLiveData<Boolean>()
         .apply {
             value = false
 

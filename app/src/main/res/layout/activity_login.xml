@@ -85,7 +85,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView"
         android:layout_marginTop="100dp"
-        android:visibility="@{viewModel.isLoged ? View.VISIBLE : View.GONE}"/>
+        android:visibility="@{viewModel.isLogged ? View.VISIBLE : View.GONE}"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
