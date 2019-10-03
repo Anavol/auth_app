@@ -4,7 +4,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.anavol.auth_application.MainViewModel"
+            type="com.anavol.auth_application.main.MainViewModel"
             />
     </data>
 

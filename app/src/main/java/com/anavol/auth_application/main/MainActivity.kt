@@ -1,4 +1,4 @@
-package com.anavol.auth_application
+package com.anavol.auth_application.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.anavol.auth_application.R
 import com.anavol.auth_application.gitSearchTools.GithubApiService
 import com.anavol.auth_application.searchRecycleView.GitUserRecyclerAdapter
 import com.anavol.auth_application.userDBTools.DbTools
@@ -18,10 +19,11 @@ import com.anavol.auth_application.userDBTools.UserDataBase
 import com.anavol.auth_application.databinding.ActivityMainBinding
 import com.anavol.auth_application.databinding.ContentMainBinding
 import com.anavol.auth_application.databinding.NavHeaderMainBinding
+import com.anavol.auth_application.login.LoginActivity
+import com.anavol.auth_application.login.User
 import com.squareup.picasso.Picasso
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -65,9 +67,11 @@ class MainActivity : AppCompatActivity() {
             false
         )
         contentBind.viewModel = contentViewModel
+        viewModel.login.value = user.login
+        viewModel.photo.value = user.photo
 
         Picasso.get()
-            .load(user.photo)
+            .load(viewModel.photo.value)//
             .into(navBind.profilePic)
         viewModel.login.value = user.login
 
@@ -75,6 +79,7 @@ class MainActivity : AppCompatActivity() {
             GlobalScope.launch(Dispatchers.Default) {
                 DbTools.clearDb(mDb)
                 startActivity(loginIntent)
+                finish()
             }
         }
 

@@ -1,4 +1,4 @@
-package com.anavol.auth_application
+package com.anavol.auth_application.login
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

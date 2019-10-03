@@ -1,13 +1,14 @@
-package com.anavol.auth_application
+package com.anavol.auth_application.main
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class MainViewModel: ViewModel() {
     var login = MutableLiveData<String>()
+        .apply {
+            value = ""
+        }
+    var photo = MutableLiveData<String>()
         .apply {
             value = ""
         }
