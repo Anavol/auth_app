@@ -90,11 +90,11 @@ class MainActivity : AppCompatActivity() {
             setOf(
             ), drawerLayout
         )
-        gitUserAdapter = GitUserRecyclerAdapter()
 
         btnSearch.setOnClickListener {
             var searchString = searchField.text.toString()
             beginSearch(searchString = searchString)
+            gitUserAdapter = GitUserRecyclerAdapter()
             contentBind.recyclerView
                 .apply {
                     layoutManager = LinearLayoutManager(this@MainActivity)
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun beginSearch(searchString: String) {
-        gitApiServe.search(searchString, 100)
+        gitApiServe.search(searchString, 0, 100)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
