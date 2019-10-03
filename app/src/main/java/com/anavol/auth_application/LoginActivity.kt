@@ -33,13 +33,14 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val mainIntent = Intent(this, MainActivity::class.java)
+
             //val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
         viewModel = ViewModelProviders.of(this).get(LoginViewModel::class.java)
         val binding: ActivityLoginBinding = DataBindingUtil.setContentView(
             this, R.layout.activity_login)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
+        val mainIntent = Intent(this, MainActivity::class.java)
 
         mDb = UserDataBase.getInstance(this)
         GlobalScope.launch(Dispatchers.Main) {
@@ -74,11 +75,14 @@ class LoginActivity : AppCompatActivity() {
                     userData.photo = responseParsed.photo_200
                     userData.token = request.preparedParameters["access_token"].toString()
                     userData.socialNetwork = "VK"
+                        //во вьюМодел?
                     GlobalScope.launch(Dispatchers.Main) {
                         insertUserDataInDb(mDb,userData)
                         userData = UserData()
                         fetchUserDataFromDb(mDb,userData)
                         val user = User(userData.name, userData.photo)
+                            //viewModel.onLoginSuccess(userData)
+                        viewModel.isLogged.value = true
                         startActivity(mainIntent.putExtra("user", user))
                     }
                 }

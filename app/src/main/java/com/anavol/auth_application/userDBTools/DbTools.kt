@@ -2,7 +2,7 @@ package com.anavol.auth_application.userDBTools
 
 class DbTools {
     companion object{
-        suspend fun fetchUserDataFromDb(mDb: UserDataBase?, userData: UserData) {
+        suspend fun fetchUserDataFromDb(mDb: UserDataBase?, userData: UserData) { //не статич
             val userDataList =
                 mDb?.userDataDao()?.getAll()
             if (userDataList == null || userDataList?.size == 0) {

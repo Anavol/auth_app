@@ -16,7 +16,7 @@ interface GithubApiService {
                @Query("per_page") perPage: Int
         ): Observable<Result>
 
-    companion object{
+    companion object{ // перенести в класс Вебапи и там создать это инстанс, функцию дженерик криэйтСервис, принимает интерфейс отдает инстанс
         fun create(): GithubApiService {
             val retrofit = Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -24,7 +24,8 @@ interface GithubApiService {
                 .baseUrl("https://api.github.com/")
                 .build()
 
-            return retrofit.create(GithubApiService::class.java)
+            return retrofit.create(GithubApiService::class.java) // вызвать в функции криэйтСервис и передать иснтанс, объект? не статическая функция
+
         }
     }
 }
