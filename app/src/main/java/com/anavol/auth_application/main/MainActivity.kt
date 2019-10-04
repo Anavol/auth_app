@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
-    private val gitUserAdapter = GitUserRecyclerAdapter()
+    private lateinit  var gitUserAdapter: GitUserRecyclerAdapter
     private val gitApiServe by lazy {
         GithubApiService.create()
     }
@@ -74,6 +74,10 @@ class MainActivity : AppCompatActivity() {
             .into(navBind.profilePic)
         viewModel.login.value = user.login
 
+        gitUserAdapter = GitUserRecyclerAdapter()
+        contentBind.recyclerView.adapter = gitUserAdapter
+        contentBind.recyclerView.layoutManager = LinearLayoutManager(this)
+
         navBind.logout.setOnClickListener {
             GlobalScope.launch(Dispatchers.Default) {
                 DbTools.clearDb(mDb)
@@ -81,6 +85,8 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }
+
+
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -91,11 +97,22 @@ class MainActivity : AppCompatActivity() {
         )
 
         btnSearch.setOnClickListener {
-            beginSearch(searchField.text.toString())
-            contentBind.recyclerView.apply {
-                layoutManager = LinearLayoutManager(this@MainActivity)
-                adapter = gitUserAdapter
-            }
+         //   beginSearch(searchField.text.toString())
+            gitApiServe.search(searchField.text.toString(), 0, 100)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { result ->
+                         gitUserAdapter.submitList(result.items)
+                         gitUserAdapter.notifyDataSetChanged()
+
+                    },
+                    { error ->
+                        Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
+                    }
+                )
+
+
         }
     }
 
@@ -106,8 +123,9 @@ class MainActivity : AppCompatActivity() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { result ->
-                    gitUserAdapter.submitList(result.items)
+                   gitUserAdapter.submitList(result.items)
                     gitUserAdapter.notifyDataSetChanged()
+
                 },
                 { error ->
                     Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
