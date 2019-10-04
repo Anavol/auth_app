@@ -3,6 +3,7 @@ package com.anavol.auth_application.main
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -11,13 +12,16 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.anavol.auth_application.R
 import com.anavol.auth_application.databinding.ActivityMainBinding
 import com.anavol.auth_application.databinding.ContentMainBinding
 import com.anavol.auth_application.databinding.NavHeaderMainBinding
+import com.anavol.auth_application.gitSearchTools.GitUser
 import com.anavol.auth_application.gitSearchTools.GithubApiService
 import com.anavol.auth_application.login.LoginActivity
 import com.anavol.auth_application.login.User
+import com.anavol.auth_application.searchRecycleView.CustomAdapter
 import com.anavol.auth_application.searchRecycleView.GitUserRecyclerAdapter
 import com.anavol.auth_application.userDBTools.DbTools
 import com.anavol.auth_application.userDBTools.UserDataBase
@@ -33,7 +37,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
-    private lateinit  var gitUserAdapter: GitUserRecyclerAdapter
     private val gitApiServe by lazy {
         GithubApiService.create()
     }
@@ -58,6 +61,18 @@ class MainActivity : AppCompatActivity() {
         binding.lifecycleOwner = this
         navBind.viewModel = viewModel
 
+        val recyclerView = recyclerView as RecyclerView
+        //adding a layoutmanager
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        //crating an arraylist to store users using the data class user
+        val users = ArrayList<GitUser>()
+
+        //creating our adapter
+        val adapter = CustomAdapter(users)
+
+        //now adding the adapter to recyclerview
+        recyclerView.adapter = adapter
+
         val contentViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         val contentBind: ContentMainBinding = DataBindingUtil.inflate(
             layoutInflater,
@@ -74,10 +89,13 @@ class MainActivity : AppCompatActivity() {
             .into(navBind.profilePic)
         viewModel.login.value = user.login
 
-        gitUserAdapter = GitUserRecyclerAdapter()
-        contentBind.recyclerView.adapter = gitUserAdapter
-        contentBind.recyclerView.layoutManager = LinearLayoutManager(this)
-
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
+        appBarConfiguration = AppBarConfiguration(
+            setOf(
+            ), drawerLayout
+        )
         navBind.logout.setOnClickListener {
             GlobalScope.launch(Dispatchers.Default) {
                 DbTools.clearDb(mDb)
@@ -86,46 +104,30 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
-
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-            ), drawerLayout
-        )
-
         btnSearch.setOnClickListener {
-         //   beginSearch(searchField.text.toString())
-            gitApiServe.search(searchField.text.toString(), 0, 100)
+            val searchString = searchField.text.toString()
+            gitApiServe.search(searchString, 0, 30)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { result ->
-                         gitUserAdapter.submitList(result.items)
-                         gitUserAdapter.notifyDataSetChanged()
-
+                        users.addAll(result.items)
+                        adapter.notifyDataSetChanged()
                     },
-                    { error ->
+                    { error -> val er = error.message
                         Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
                     }
                 )
-
-
         }
     }
 
-
-    private fun beginSearch(searchString: String) {
+    private fun beginSearch(searchString: String, users: ArrayList<GitUser>) {
         gitApiServe.search(searchString, 0, 100)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { result ->
-                   gitUserAdapter.submitList(result.items)
-                    gitUserAdapter.notifyDataSetChanged()
-
+                    users.addAll(result.items)
                 },
                 { error ->
                     Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
@@ -133,6 +135,7 @@ class MainActivity : AppCompatActivity() {
             )
 
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
