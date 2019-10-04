@@ -1,29 +1,27 @@
 package com.anavol.auth_application.login
 
-import android.app.Application
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.vk.sdk.VKSdk
-import com.vk.sdk.VKScope
-import com.vk.sdk.VKAccessToken
-import com.vk.sdk.VKCallback
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.anavol.auth_application.main.MainActivity
 import com.anavol.auth_application.R
+import com.anavol.auth_application.databinding.ActivityLoginBinding
+import com.anavol.auth_application.main.MainActivity
 import com.anavol.auth_application.userDBTools.DbTools.Companion.fetchUserDataFromDb
 import com.anavol.auth_application.userDBTools.DbTools.Companion.insertUserDataInDb
 import com.anavol.auth_application.userDBTools.UserData
 import com.anavol.auth_application.userDBTools.UserDataBase
-import com.anavol.auth_application.databinding.ActivityLoginBinding
 import com.squareup.picasso.Picasso
+import com.vk.sdk.VKAccessToken
+import com.vk.sdk.VKCallback
+import com.vk.sdk.VKScope
+import com.vk.sdk.VKSdk
 import com.vk.sdk.api.*
-import com.vk.sdk.api.model.VKList
 import com.vk.sdk.api.model.VKApiUserFull
-import com.vk.sdk.util.VKUtil
+import com.vk.sdk.api.model.VKList
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -38,8 +36,8 @@ class LoginActivity : AppCompatActivity(), AuthService {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-            //val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
-        viewModel = ViewModelProviders.of(this, viewModelFactory {LoginViewModel(this)})
+        //val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
+        viewModel = ViewModelProviders.of(this, viewModelFactory { LoginViewModel(this) })
             .get(LoginViewModel(this)::class.java)
         val binding: ActivityLoginBinding = DataBindingUtil.setContentView(
             this, R.layout.activity_login
@@ -48,8 +46,8 @@ class LoginActivity : AppCompatActivity(), AuthService {
         binding.lifecycleOwner = this
         mDb = UserDataBase.getInstance(this)
         GlobalScope.launch(Dispatchers.Main) {
-            fetchUserDataFromDb(mDb,userData)
-            if (userData.id != null ) {
+            fetchUserDataFromDb(mDb, userData)
+            if (userData.id != null) {
                 val user = User(userData.name, userData.photo)
                 viewModel.login.value = user.login
                 viewModel.photo.value = userData.photo
@@ -57,19 +55,18 @@ class LoginActivity : AppCompatActivity(), AuthService {
                 Picasso.get()
                     .load(user.photo)
                     .into(profilePic)
-            }
-            else {
+            } else {
                 viewModel.isLogged.value = false
                 VKSdk.logout()
             }
         }
-        }
+    }
 
     override fun onResume() {
         super.onResume()
         GlobalScope.launch(Dispatchers.Main) {
-            fetchUserDataFromDb(mDb,userData)
-            if (userData.id != null ) {
+            fetchUserDataFromDb(mDb, userData)
+            if (userData.id != null) {
                 val user = User(userData.name, userData.photo)
                 viewModel.login.value = user.login
                 viewModel.photo.value = userData.photo
@@ -77,8 +74,7 @@ class LoginActivity : AppCompatActivity(), AuthService {
                 Picasso.get()
                     .load(user.photo)
                     .into(profilePic)
-            }
-            else {
+            } else {
                 viewModel.isLogged.value = false
                 VKSdk.logout()
             }
@@ -90,7 +86,7 @@ class LoginActivity : AppCompatActivity(), AuthService {
         val mainIntent = Intent(this, MainActivity::class.java)
         viewModel.isLogged.value = true
         startActivity(mainIntent.putExtra("user", user))
-       // finish()
+        // finish()
     }
 
     override fun authVK() {
@@ -99,27 +95,20 @@ class LoginActivity : AppCompatActivity(), AuthService {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (!VKSdk.onActivityResult(requestCode, resultCode, data, object : VKCallback<VKAccessToken> {
-                override fun onResult(res: VKAccessToken) {
-                        var request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS, "photo_200"))
+        if (!VKSdk.onActivityResult(
+                requestCode,
+                resultCode,
+                data,
+                object : VKCallback<VKAccessToken> {
+                    override fun onResult(res: VKAccessToken) {
+                        var request =
+                            VKApi.users().get(VKParameters.from(VKApiConst.FIELDS, "photo_200"))
                         request.executeWithListener(object : VKRequest.VKRequestListener() {
                             override fun onComplete(response: VKResponse) {
-                                val responseParsed = (response.parsedModel as VKList<VKApiUserFull>)[0]
-                                userData.name = responseParsed.first_name + " " + responseParsed.last_name
-                                userData.photo = responseParsed.photo_200
-                                userData.token = request.preparedParameters["access_token"].toString()
-                                userData.socialNetwork = "VK"
-                                GlobalScope.launch(Dispatchers.Main) {
-                                    insertUserDataInDb(mDb, userData)
-                                    userData = UserData()
-                                    fetchUserDataFromDb(mDb, userData)
-                                    var user = User(userData.name, userData.photo)
-                                    passLoggedUser(user)
-                                }
+                                plkkl(response, request)
                             }
-                            override fun onError(error: VKError) {
-                                //Do error stuff
-                            }
+
+                            override fun onError(error: VKError) = Unit
 
                             override fun attemptFailed(
                                 request: VKRequest,
@@ -130,17 +119,34 @@ class LoginActivity : AppCompatActivity(), AuthService {
                             }
                         })
                     }
-                    override
-                    fun onError(error: VKError ) {
+
+                    override fun onError(error: VKError) {
                     }
-                })) {
+                })
+        ) {
             super.onActivityResult(requestCode, resultCode, data)
         }
 
     }
+
+    private fun plkkl(response: VKResponse, request: VKRequest) {
+        val responseParsed = (response.parsedModel as VKList<VKApiUserFull>)[0]
+        userData.name = responseParsed.first_name + " " + responseParsed.last_name
+        userData.photo = responseParsed.photo_200
+        userData.token = request.preparedParameters["access_token"].toString()
+        userData.socialNetwork = "VK"
+        GlobalScope.launch(Dispatchers.Main) {
+            insertUserDataInDb(mDb, userData)
+            userData = UserData()
+            fetchUserDataFromDb(mDb, userData)
+            var user = User(userData.name, userData.photo)
+            passLoggedUser(user)
+        }
+    }
+
     private inline fun <VM : ViewModel> viewModelFactory(crossinline f: () -> VM) =
         object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(aClass: Class<T>):T = f() as T
+            override fun <T : ViewModel> create(aClass: Class<T>): T = f() as T
         }
 }
 
