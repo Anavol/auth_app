@@ -1,4 +1,4 @@
-package com.anavol.auth_application.userDBTools
+package com.anavol.auth_application.DbTools
 
 import android.content.Context
 import androidx.room.Database

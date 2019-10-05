@@ -4,17 +4,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class MainViewModel: ViewModel() {
-    var login = MutableLiveData<String>()
-        .apply {
-            value = ""
-        }
-    var photo = MutableLiveData<String>()
-        .apply {
-            value = ""
-        }
-    val searchString = MutableLiveData<String>()
-        .apply {
-            value = ""
-        }
-
+    var login = MutableLiveData<String>("")
+    var photo = MutableLiveData<String>("")
 }

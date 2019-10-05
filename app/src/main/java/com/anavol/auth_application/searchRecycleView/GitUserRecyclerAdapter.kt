@@ -8,10 +8,7 @@ import com.anavol.auth_application.R
 import com.anavol.auth_application.gitSearchTools.GitUser
 import kotlinx.android.synthetic.main.user_list_item.view.*
 
-class GitUserRecyclerAdapter() :
-//class GitUserRecyclerAdapter(private var items: List<GitUser> = ArrayList()) :
-
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class GitUserRecyclerAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var items: List<GitUser> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -35,7 +32,6 @@ class GitUserRecyclerAdapter() :
     override fun getItemCount(): Int {
         return items.size
     }
-
 
     fun submitList(userList: List<GitUser>) {
         items = userList

@@ -1,4 +1,4 @@
-package com.anavol.auth_application.userDBTools
+package com.anavol.auth_application.DbTools
 
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE

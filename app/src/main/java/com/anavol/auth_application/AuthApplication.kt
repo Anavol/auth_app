@@ -8,6 +8,6 @@ class AuthApplication: Application() {
     override fun onCreate() {
         super.onCreate()
         VKSdk.initialize(this)
-            //   val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
+        //val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
 }
 }

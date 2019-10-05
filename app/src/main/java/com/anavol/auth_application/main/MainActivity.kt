@@ -3,7 +3,6 @@ package com.anavol.auth_application.main
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingUtil
@@ -21,8 +20,8 @@ import com.anavol.auth_application.gitSearchTools.GithubApiService
 import com.anavol.auth_application.login.LoginActivity
 import com.anavol.auth_application.login.User
 import com.anavol.auth_application.searchRecycleView.CustomAdapter
-import com.anavol.auth_application.userDBTools.DbTools
-import com.anavol.auth_application.userDBTools.UserDataBase
+import com.anavol.auth_application.DbTools.DbTools
+import com.anavol.auth_application.DbTools.UserDataBase
 import com.squareup.picasso.Picasso
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -37,19 +36,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
     private lateinit var searchString: String
+    private  var page: Int = 0
     private val gitApiServe by lazy {
         GithubApiService.create()
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val user = intent.getParcelableExtra<User>("user")
         val mDb = UserDataBase.getInstance(this)
-        var page = 0
         val loginIntent = Intent(this, LoginActivity::class.java)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         val binding: ActivityMainBinding = DataBindingUtil.setContentView(
-            this, com.anavol.auth_application.R.layout.activity_main
+            this, R.layout.activity_main
         )
         val navBind: NavHeaderMainBinding = NavHeaderMainBinding.inflate(
             layoutInflater,
@@ -60,12 +58,12 @@ class MainActivity : AppCompatActivity() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
         navBind.viewModel = viewModel
-
         val recyclerView = recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
         val users = ArrayList<GitUser>()
         val adapter = CustomAdapter(users)
         recyclerView.adapter = adapter
+
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -73,7 +71,7 @@ class MainActivity : AppCompatActivity() {
             == recyclerView.layoutManager?.itemCount?.minus(5)!! )
                    {  //if near fifth item from end
                     searchString = searchField.text.toString()
-                    gitApiServe.search(searchString, page++, 30)
+                    gitApiServe.search(searchString, ++page, 30)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -98,7 +96,6 @@ class MainActivity : AppCompatActivity() {
         contentBind.viewModel = contentViewModel
         viewModel.login.value = user.login
         viewModel.photo.value = user.photo
-
         Picasso.get()
             .load(viewModel.photo.value)
             .into(navBind.profilePic)
@@ -119,29 +116,28 @@ class MainActivity : AppCompatActivity() {
             }
         }
         btnSearch.setOnClickListener {
-
-            users.clear()
             page = 0
+            users.clear()
             adapter.notifyDataSetChanged()
             searchString = searchField.text.toString()
             GlobalScope.launch(Dispatchers.Main) {
                 delay(600)
-            gitApiServe.search(searchString, page++, 30)
+            gitApiServe.search(searchString, page, 30)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { result ->
                         users.addAll(result.items)
                         adapter.notifyDataSetChanged()
+                        page = 1
                     },
                     { error -> val er = error.message
                     }
                 )
-        }
+            }
         }
     }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
     }

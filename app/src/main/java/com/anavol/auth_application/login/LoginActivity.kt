@@ -10,10 +10,10 @@ import androidx.lifecycle.ViewModelProviders
 import com.anavol.auth_application.R
 import com.anavol.auth_application.databinding.ActivityLoginBinding
 import com.anavol.auth_application.main.MainActivity
-import com.anavol.auth_application.userDBTools.DbTools.Companion.fetchUserDataFromDb
-import com.anavol.auth_application.userDBTools.DbTools.Companion.insertUserDataInDb
-import com.anavol.auth_application.userDBTools.UserData
-import com.anavol.auth_application.userDBTools.UserDataBase
+import com.anavol.auth_application.DbTools.DbTools.Companion.fetchUserDataFromDb
+import com.anavol.auth_application.DbTools.DbTools.Companion.insertUserDataInDb
+import com.anavol.auth_application.DbTools.UserData
+import com.anavol.auth_application.DbTools.UserDataBase
 import com.squareup.picasso.Picasso
 import com.vk.sdk.VKAccessToken
 import com.vk.sdk.VKCallback
@@ -36,7 +36,6 @@ class LoginActivity : AppCompatActivity(), AuthService {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //val fingerprints = VKUtil.getCertificateFingerprint(this, this.packageName)
         viewModel = ViewModelProviders.of(this, viewModelFactory { LoginViewModel(this) })
             .get(LoginViewModel(this)::class.java)
         val binding: ActivityLoginBinding = DataBindingUtil.setContentView(
@@ -79,14 +78,12 @@ class LoginActivity : AppCompatActivity(), AuthService {
                 VKSdk.logout()
             }
         }
-
     }
 
     override fun passLoggedUser(user: User) {
         val mainIntent = Intent(this, MainActivity::class.java)
         viewModel.isLogged.value = true
         startActivity(mainIntent.putExtra("user", user))
-        // finish()
     }
 
     override fun authVK() {
@@ -105,7 +102,7 @@ class LoginActivity : AppCompatActivity(), AuthService {
                             VKApi.users().get(VKParameters.from(VKApiConst.FIELDS, "photo_200"))
                         request.executeWithListener(object : VKRequest.VKRequestListener() {
                             override fun onComplete(response: VKResponse) {
-                                plkkl(response, request)
+                                processVkResponse(response, request)
                             }
 
                             override fun onError(error: VKError) = Unit
@@ -115,7 +112,6 @@ class LoginActivity : AppCompatActivity(), AuthService {
                                 attemptNumber: Int,
                                 totalAttempts: Int
                             ) {
-                                //I don't really believe in progress
                             }
                         })
                     }
@@ -126,10 +122,9 @@ class LoginActivity : AppCompatActivity(), AuthService {
         ) {
             super.onActivityResult(requestCode, resultCode, data)
         }
-
     }
 
-    private fun plkkl(response: VKResponse, request: VKRequest) {
+    private fun processVkResponse(response: VKResponse, request: VKRequest) {
         val responseParsed = (response.parsedModel as VKList<VKApiUserFull>)[0]
         userData.name = responseParsed.first_name + " " + responseParsed.last_name
         userData.photo = responseParsed.photo_200
