@@ -7,13 +7,11 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import com.anavol.auth_application.DbTools.DbTools
 import com.anavol.auth_application.R
 import com.anavol.auth_application.databinding.ActivityLoginBinding
 import com.anavol.auth_application.main.MainActivity
-import com.anavol.auth_application.DbTools.DbTools.Companion.fetchUserDataFromDb
-import com.anavol.auth_application.DbTools.DbTools.Companion.insertUserDataInDb
 import com.anavol.auth_application.DbTools.UserData
-import com.anavol.auth_application.DbTools.UserDataBase
 import com.squareup.picasso.Picasso
 import com.vk.sdk.VKAccessToken
 import com.vk.sdk.VKCallback
@@ -30,9 +28,10 @@ import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity(), AuthService {
 
-    private var mDb: UserDataBase? = null
-    var userData = UserData()
+    private lateinit var dbTools: DbTools
+    private var userData = UserData()
     private lateinit var viewModel: LoginViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,9 +42,9 @@ class LoginActivity : AppCompatActivity(), AuthService {
         )
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
-        mDb = UserDataBase.getInstance(this)
+        dbTools = DbTools(this)
         GlobalScope.launch(Dispatchers.Main) {
-            fetchUserDataFromDb(mDb, userData)
+            dbTools.fetchUserDataFromDb(userData)
             if (userData.id != null) {
                 val user = User(userData.name, userData.photo)
                 viewModel.login.value = user.login
@@ -64,7 +63,7 @@ class LoginActivity : AppCompatActivity(), AuthService {
     override fun onResume() {
         super.onResume()
         GlobalScope.launch(Dispatchers.Main) {
-            fetchUserDataFromDb(mDb, userData)
+            dbTools.fetchUserDataFromDb(userData)
             if (userData.id != null) {
                 val user = User(userData.name, userData.photo)
                 viewModel.login.value = user.login
@@ -131,9 +130,9 @@ class LoginActivity : AppCompatActivity(), AuthService {
         userData.token = request.preparedParameters["access_token"].toString()
         userData.socialNetwork = "VK"
         GlobalScope.launch(Dispatchers.Main) {
-            insertUserDataInDb(mDb, userData)
+            dbTools.insertUserDataInDb(userData)
             userData = UserData()
-            fetchUserDataFromDb(mDb, userData)
+            dbTools.fetchUserDataFromDb(userData)
             var user = User(userData.name, userData.photo)
             passLoggedUser(user)
         }

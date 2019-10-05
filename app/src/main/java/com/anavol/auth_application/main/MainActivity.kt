@@ -31,11 +31,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
     private lateinit var searchString: String
+    private lateinit var dbTools: DbTools
     private  var page: Int = 0
     private val gitApiServe by lazy {
         GithubApiService.create()
@@ -43,7 +45,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val user = intent.getParcelableExtra<User>("user")
-        val mDb = UserDataBase.getInstance(this)
+        dbTools = DbTools(this)
         val loginIntent = Intent(this, LoginActivity::class.java)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         val binding: ActivityMainBinding = DataBindingUtil.setContentView(
@@ -79,7 +81,8 @@ class MainActivity : AppCompatActivity() {
                                 users.addAll(result.items)
                                 adapter.notifyDataSetChanged()
                             },
-                            { error -> val err = error.message
+                            { error ->
+                                error.message
                             }
                         )
                 }
@@ -110,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         )
         navBind.logout.setOnClickListener {
             GlobalScope.launch(Dispatchers.Default) {
-                DbTools.clearDb(mDb)
+                dbTools.clearDb()
                 startActivity(loginIntent)
                 finish()
             }
@@ -131,7 +134,8 @@ class MainActivity : AppCompatActivity() {
                         adapter.notifyDataSetChanged()
                         page = 1
                     },
-                    { error -> val er = error.message
+                    { error ->
+                        error.message
                     }
                 )
             }
